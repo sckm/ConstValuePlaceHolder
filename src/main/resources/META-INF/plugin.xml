@@ -14,8 +14,11 @@
     <depends>com.intellij.modules.lang</depends>
     -->
 
+    <depends optional="true">org.jetbrains.kotlin</depends>
+
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
+        <lang.foldingBuilder language="kotlin" implementationClass="com.github.sckm.ConstStringPlaceholder"/>
     </extensions>
 
     <actions>
