@@ -5,13 +5,30 @@ import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor
 import com.intellij.openapi.editor.Document
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.psi.KtBlockStringTemplateEntry
-import org.jetbrains.kotlin.psi.KtSimpleNameStringTemplateEntry
-import org.jetbrains.kotlin.psi.KtTreeVisitor
+import org.jetbrains.kotlin.console.actions.errorNotification
+import org.jetbrains.kotlin.idea.caches.resolve.analyze
+import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.resolve.constants.CompileTimeConstant
+import org.jetbrains.kotlin.resolve.constants.evaluate.ConstantExpressionEvaluator
+import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 
 class ConstStringPlaceholder : FoldingBuilderEx() {
     override fun getPlaceholderText(node: ASTNode): String? {
-        return "placeholder"
+        val psi = node.psi
+        return when(psi) {
+            is KtSimpleNameStringTemplateEntry -> {
+                val eval = psi.expression as? KtNameReferenceExpression ?: throw IllegalStateException()
+                val bindingContext = (eval as KtElement).analyze(BodyResolveMode.PARTIAL)
+                val kotlinType = bindingContext.getType(eval) ?: return null
+                val compileTimeConstant = ConstantExpressionEvaluator.getConstant(eval, bindingContext)as? CompileTimeConstant
+                        ?: return null
+                compileTimeConstant.toConstantValue(kotlinType).value as? String
+            }
+            else -> {
+                errorNotification(node.psi.project, "unexpected Type: ${psi.javaClass}")
+                null
+            }
+        }
     }
 
     override fun buildFoldRegions(root: PsiElement, document: Document, quick: Boolean): Array<FoldingDescriptor> {
@@ -25,6 +42,7 @@ class ConstStringPlaceholder : FoldingBuilderEx() {
 
             override fun visitBlockStringTemplateEntry(entry: KtBlockStringTemplateEntry, data: PsiElement?): Void? {
                 return super.visitBlockStringTemplateEntry(entry, data)
+                // TODO handle BlockString
             }
         })
         return descriptors.toTypedArray()
