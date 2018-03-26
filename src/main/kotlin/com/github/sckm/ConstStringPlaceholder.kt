@@ -22,7 +22,7 @@ class ConstStringPlaceholder : FoldingBuilderEx() {
                 val kotlinType = bindingContext.getType(eval) ?: return null
                 val compileTimeConstant = ConstantExpressionEvaluator.getConstant(eval, bindingContext)as? CompileTimeConstant
                         ?: return null
-                compileTimeConstant.toConstantValue(kotlinType).value as? String
+                compileTimeConstant.toConstantValue(kotlinType).value.toString()
             }
             else -> {
                 errorNotification(node.psi.project, "unexpected Type: ${psi.javaClass}")
