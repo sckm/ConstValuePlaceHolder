@@ -32,6 +32,7 @@ class ConstStringPlaceholder : FoldingBuilderEx() {
         root.acceptChildren(object : KtTreeVisitor<PsiElement>() {
             override fun visitSimpleNameStringTemplateEntry(entry: KtSimpleNameStringTemplateEntry, data: PsiElement?): Void? {
                 super.visitSimpleNameStringTemplateEntry(entry, data)
+                entry.expression?.toConstantValueOrNull() ?: return null
                 descriptors += FoldingDescriptor(entry, entry.textRange)
                 return null
             }
