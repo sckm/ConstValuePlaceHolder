@@ -20,6 +20,10 @@ class ConstStringPlaceholder : FoldingBuilderEx() {
                 val eval = psi.expression as? KtNameReferenceExpression ?: throw IllegalStateException()
                 eval.toConstantValueOrNull()?.value.toString()
             }
+            is KtBlockStringTemplateEntry -> {
+                val eval = psi.expression ?: throw IllegalStateException()
+                eval.toConstantValueOrNull()?.value.toString()
+            }
             else -> {
                 errorNotification(node.psi.project, "unexpected Type: ${psi.javaClass}")
                 null
@@ -38,8 +42,11 @@ class ConstStringPlaceholder : FoldingBuilderEx() {
             }
 
             override fun visitBlockStringTemplateEntry(entry: KtBlockStringTemplateEntry, data: PsiElement?): Void? {
-                return super.visitBlockStringTemplateEntry(entry, data)
-                // TODO handle BlockString
+                // Don't visit children
+                // super.visitBlockStringTemplateEntry(entry, data)
+                entry.expression?.toConstantValueOrNull() ?: return null
+                descriptors += FoldingDescriptor(entry, entry.textRange)
+                return null
             }
         })
         return descriptors.toTypedArray()
