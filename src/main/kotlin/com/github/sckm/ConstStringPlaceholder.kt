@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.console.actions.errorNotification
 import org.jetbrains.kotlin.idea.caches.resolve.analyze
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.resolve.constants.CompileTimeConstant
+import org.jetbrains.kotlin.resolve.constants.ConstantValue
 import org.jetbrains.kotlin.resolve.constants.evaluate.ConstantExpressionEvaluator
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 
@@ -18,11 +18,7 @@ class ConstStringPlaceholder : FoldingBuilderEx() {
         return when(psi) {
             is KtSimpleNameStringTemplateEntry -> {
                 val eval = psi.expression as? KtNameReferenceExpression ?: throw IllegalStateException()
-                val bindingContext = (eval as KtElement).analyze(BodyResolveMode.PARTIAL)
-                val kotlinType = bindingContext.getType(eval) ?: return null
-                val compileTimeConstant = ConstantExpressionEvaluator.getConstant(eval, bindingContext)as? CompileTimeConstant
-                        ?: return null
-                compileTimeConstant.toConstantValue(kotlinType).value.toString()
+                eval.toConstantValueOrNull()?.value.toString()
             }
             else -> {
                 errorNotification(node.psi.project, "unexpected Type: ${psi.javaClass}")
@@ -50,5 +46,13 @@ class ConstStringPlaceholder : FoldingBuilderEx() {
 
     override fun isCollapsedByDefault(node: ASTNode): Boolean {
         return true
+    }
+
+    private fun KtExpression.toConstantValueOrNull(): ConstantValue<*>? {
+        val bindingContext = analyze(BodyResolveMode.PARTIAL)
+        val kotlinType = bindingContext.getType(this) ?: return null
+        val compileTimeConstant =
+                ConstantExpressionEvaluator.getConstant(this, bindingContext) ?: return null
+        return compileTimeConstant.toConstantValue(kotlinType)
     }
 }
