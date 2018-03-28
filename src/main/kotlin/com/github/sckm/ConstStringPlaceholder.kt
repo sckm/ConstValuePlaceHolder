@@ -53,7 +53,7 @@ class ConstStringPlaceholder : FoldingBuilderEx() {
     }
 
     override fun isCollapsedByDefault(node: ASTNode): Boolean {
-        return true
+        return false
     }
 
     private fun KtExpression.toConstantValueOrNull(): ConstantValue<*>? {
