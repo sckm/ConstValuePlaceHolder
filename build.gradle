@@ -14,7 +14,7 @@ plugins {
 }
 
 group 'com.github.sckm'
-version '0.0.1-SNAPSHOT'
+version '0.0.1'
 
 apply plugin: 'java'
 apply plugin: 'kotlin'
@@ -38,17 +38,19 @@ compileTestKotlin {
 }
 intellij {
     version '2017.1'
+    sameSinceUntilBuild false
+    updateSinceUntilBuild false
     plugins = ['Kotlin']
     alternativeIdePath '/Applications/Android Studio3.0.app'
 }
 patchPluginXml {
+    sinceBuild '171.3780'
+
     pluginDescription """
         In Kotlin string template, show constant value as placeholder text if variable is constant value
         """
 
-    changeNotes """
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>"""
+    changeNotes """"""
 }
 
 publishPlugin {
