@@ -55,5 +55,5 @@ patchPluginXml {
 
 publishPlugin {
     username 'scache'
-    password pluginPassword
+    password System.getenv("INTELLIJ_PLUGIN_PASS")
 }
